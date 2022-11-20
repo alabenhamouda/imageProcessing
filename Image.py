@@ -40,3 +40,11 @@ class PGMImage:
                     occ[pixel] = 0
                 occ[pixel] += 1
         return [occ.get(level, 0) for level in range(self.maxLevel + 1)]
+
+    def getMean(self):
+        sum = 0
+        for row in self.data:
+            for pixel in row:
+                sum += pixel
+
+        return sum / (self.rows * self.cols)
