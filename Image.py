@@ -31,3 +31,12 @@ class PGMImage:
             f.writelines([str(self.maxLevel) + '\n'])
             f.writelines([' '.join(str(pixel) for pixel in row) + '\n'
                          for row in self.data])
+
+    def getHistogram(self):
+        occ = {}
+        for row in self.data:
+            for pixel in row:
+                if pixel not in occ:
+                    occ[pixel] = 0
+                occ[pixel] += 1
+        return [occ.get(level, 0) for level in range(self.maxLevel + 1)]
