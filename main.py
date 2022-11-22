@@ -5,7 +5,13 @@ import matplotlib.pyplot as plt
 filepath = './images/balloons.ascii.pgm'
 balloon = PGMImage.readFromFile(filepath=filepath)
 
-# helpers.plot_histogram(balloon.getHistogram())
-# plt.show()
+fig, _ = helpers.plot_histogram(balloon.getHistogram())
+fig.suptitle("normal")
 
-print(balloon.getMean())
+equalizedBalloon = balloon.getEqualizedHistImage()
+equalizedBalloon.writeToFile(helpers.getOutputFilePath("equalized.pgm"))
+
+fig, _ = helpers.plot_histogram(equalizedBalloon.getHistogram())
+fig.suptitle("equalized")
+
+plt.show()

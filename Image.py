@@ -1,3 +1,7 @@
+import copy
+import math
+
+
 class PGMImage:
 
     def readFromFile(filepath):
@@ -41,6 +45,14 @@ class PGMImage:
                 occ[pixel] += 1
         return [occ.get(level, 0) for level in range(self.maxLevel + 1)]
 
+    def getCummulatedHistogram(self):
+        hist = self.getHistogram()
+        histCummul = [0] * len(hist)
+        histCummul[0] = hist[0]
+        for i in range(1, len(hist)):
+            histCummul[i] = histCummul[i - 1] + hist[i]
+        return histCummul
+
     def getMean(self):
         sum = 0
         for row in self.data:
@@ -48,3 +60,17 @@ class PGMImage:
                 sum += pixel
 
         return sum / (self.rows * self.cols)
+
+    def getEqualizedHistImage(self):
+        image = copy.deepcopy(self)
+        histCummul = image.getCummulatedHistogram()
+        lvls = [0] * (image.maxLevel + 1)
+        n = image.rows * image.cols
+        for i in range(image.maxLevel + 1):
+            lvls[i] = math.floor(image.maxLevel / n * histCummul[i])
+
+        for r in range(image.rows):
+            for c in range(image.cols):
+                image.data[r][c] = lvls[image.data[r][c]]
+
+        return image
