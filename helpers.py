@@ -5,7 +5,9 @@ import os
 def plot_histogram(hist):
     levels = [i for i in range(len(hist))]
     fig, ax = plt.subplots()
-    ax.bar(levels, hist)
+
+    ax.fill_between(levels, hist, step="pre", alpha=0.4)
+    ax.plot(levels, hist, drawstyle="steps")
 
     return fig, ax
 
