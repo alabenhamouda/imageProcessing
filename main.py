@@ -1,3 +1,3 @@
 import examples
 
-examples.equalizeHist()
+examples.readWritePPMImage()

@@ -1,4 +1,5 @@
-from Image import PGMImage
+from PGMImage import PGMImage
+from PPMImage import PPMImage
 import helpers
 import os
 import numpy as np
@@ -125,3 +126,10 @@ def edgeDetection():
 
     result = chat.applyLinearFilter(filter1).applyLinearFilter(filter2)
     result.writeToFile(helpers.getOutputFilePath("edge-detection.pgm"))
+
+
+def readWritePPMImage():
+    filepath = './images/blackbuck.ascii.ppm'
+    image = PPMImage.readFromFile(filepath)
+
+    image.writeToFile(helpers.getOutputFilePath('blackbuck.ppm'))
