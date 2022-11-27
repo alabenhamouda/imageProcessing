@@ -1,5 +1,7 @@
 import copy
 import math
+import random
+import numpy as np
 from operator import itemgetter
 from linearTransformation import LinearTransformation
 
@@ -14,7 +16,7 @@ class PGMImage:
             i = 1
             if lines[i].startswith('#'):
                 i += 1
-            image.rows, image.cols = [int(x) for x in lines[i].split()]
+            image.cols, image.rows = [int(x) for x in lines[i].split()]
             i += 1
             image.maxLevel = int(lines[i].strip())
             i += 1
@@ -33,7 +35,7 @@ class PGMImage:
     def writeToFile(self, filepath):
         with open(filepath, "w") as f:
             f.writelines([self.type + '\n'])
-            f.writelines([f'{self.rows} {self.cols}\n'])
+            f.writelines([f'{self.cols} {self.rows}\n'])
             f.writelines([str(self.maxLevel) + '\n'])
             f.writelines([' '.join(str(pixel) for pixel in row) + '\n'
                          for row in self.data])
@@ -97,5 +99,34 @@ class PGMImage:
         for r in range(image.rows):
             for c in range(image.cols):
                 image.data[r][c] = lvls[image.data[r][c]]
+
+        return image
+
+    def addNoise(self):
+        image = copy.deepcopy(self)
+        for r in range(image.rows):
+            for c in range(image.cols):
+                randomInt = random.randint(0, 20)
+                if randomInt == 0:
+                    image.data[r][c] = 0
+                elif randomInt == 20:
+                    image.data[r][c] = 255
+        return image
+
+    def applyFilter(self, filter: 'np.ndarray'):
+        image = copy.deepcopy(self)
+        data = np.array(image.data)
+        n, m = filter.shape
+        for r in range(image.rows):
+            for c in range(image.cols):
+                rstart = r - n // 2
+                rend = r + n // 2
+                cstart = c - m // 2
+                cend = c + m // 2
+                if rstart < 0 or rend >= image.rows or cstart < 0 or cend >= image.cols:
+                    continue
+                portion = data[rstart:rend + 1, cstart:cend + 1]
+                pixel = int(np.sum(np.multiply(portion, filter)))
+                image.data[r][c] = int(pixel)
 
         return image

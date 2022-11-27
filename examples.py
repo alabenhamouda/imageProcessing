@@ -1,5 +1,6 @@
 from Image import PGMImage
 import helpers
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -34,3 +35,15 @@ def linearTransform():
     fig.suptitle("transformed")
 
     plt.show()
+
+
+def linearFilter():
+    filepath = './images/chat.pgm'
+    chat = PGMImage.readFromFile(filepath=filepath)
+
+    noisyChat = chat.addNoise()
+    noisyChat.writeToFile(helpers.getOutputFilePath("noisy-chat.pgm"))
+
+    filter = np.ones((3, 3)) * 1/9
+    filtered = noisyChat.applyFilter(filter)
+    filtered.writeToFile(helpers.getOutputFilePath("mean-filtered.pgm"))
