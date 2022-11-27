@@ -128,10 +128,16 @@ class PGMImage:
         n, m = filter.shape
         for r in range(image.rows):
             for c in range(image.cols):
-                rstart = r - n // 2
-                rend = r + n // 2
-                cstart = c - m // 2
-                cend = c + m // 2
+                if n % 2 == 0:
+                    rstart = r
+                    rend = r + n - 1
+                    cstart = c
+                    cend = c + m - 1
+                else:
+                    rstart = r - n // 2
+                    rend = r + n // 2
+                    cstart = c - m // 2
+                    cend = c + m // 2
                 if rstart < 0 or rend >= image.rows or cstart < 0 or cend >= image.cols:
                     continue
                 portion = data[rstart:rend + 1, cstart:cend + 1]

@@ -106,3 +106,22 @@ def compareMedianAndMean():
 
     print(f"Signal To Noise Ratio of the mean filtered image {meanSNR}")
     print(f"Signal To Noise Ratio of the median filtered image {medianSNR}")
+
+
+def edgeDetection():
+    filepath = './images/chat.pgm'
+    chat = PGMImage.readFromFile(filepath=filepath)
+
+    filter1 = np.array([
+        [-1, -2, -1],
+        [0, 0, 0],
+        [1, 2, 1]
+    ])
+    filter2 = np.array([
+        [-1, 0, 1],
+        [-2, 0, 2],
+        [-1, 0, 1],
+    ])
+
+    result = chat.applyLinearFilter(filter1).applyLinearFilter(filter2)
+    result.writeToFile(helpers.getOutputFilePath("edge-detection.pgm"))
