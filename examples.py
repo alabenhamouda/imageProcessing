@@ -42,8 +42,12 @@ def linearFilter():
     filepath = './images/chat.pgm'
     chat = PGMImage.readFromFile(filepath=filepath)
 
-    noisyChat = chat.addNoise()
-    noisyChat.writeToFile(helpers.getOutputFilePath("noisy-chat.pgm"))
+    noisyChatPath = helpers.getOutputFilePath("noisy-chat.pgm")
+    if os.path.exists(noisyChatPath):
+        noisyChat = PGMImage.readFromFile(noisyChatPath)
+    else:
+        noisyChat = chat.addNoise()
+        noisyChat.writeToFile(helpers.getOutputFilePath("noisy-chat.pgm"))
 
     filter = np.ones((3, 3)) * 1/9
     filtered = noisyChat.applyLinearFilter(filter)

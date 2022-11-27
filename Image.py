@@ -126,7 +126,8 @@ class PGMImage:
                 if rstart < 0 or rend >= image.rows or cstart < 0 or cend >= image.cols:
                     continue
                 portion = data[rstart:rend + 1, cstart:cend + 1]
-                pixel = int(np.sum(np.multiply(portion, filter)))
+                pixel = np.sum(np.multiply(portion, filter))
+                pixel = int(np.clip(pixel, 0, image.maxLevel))
                 image.data[r][c] = pixel
 
         return image
