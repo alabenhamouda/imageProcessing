@@ -1,5 +1,6 @@
 from Image import PGMImage
 import helpers
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -45,5 +46,20 @@ def linearFilter():
     noisyChat.writeToFile(helpers.getOutputFilePath("noisy-chat.pgm"))
 
     filter = np.ones((3, 3)) * 1/9
-    filtered = noisyChat.applyFilter(filter)
+    filtered = noisyChat.applyLinearFilter(filter)
     filtered.writeToFile(helpers.getOutputFilePath("mean-filtered.pgm"))
+
+
+def medianFilter():
+    filepath = './images/chat.pgm'
+    chat = PGMImage.readFromFile(filepath=filepath)
+
+    noisyChatPath = helpers.getOutputFilePath("noisy-chat.pgm")
+    if os.path.exists(noisyChatPath):
+        noisyChat = PGMImage.readFromFile(noisyChatPath)
+    else:
+        noisyChat = chat.addNoise()
+        noisyChat.writeToFile(helpers.getOutputFilePath("noisy-chat.pgm"))
+
+    filtered = noisyChat.applyMedianFilter(3, 3)
+    filtered.writeToFile(helpers.getOutputFilePath("median-filtered.pgm"))

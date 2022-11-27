@@ -1,3 +1,3 @@
 import examples
 
-examples.linearFilter()
+examples.medianFilter()

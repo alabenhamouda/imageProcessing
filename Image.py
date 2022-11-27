@@ -113,7 +113,7 @@ class PGMImage:
                     image.data[r][c] = 255
         return image
 
-    def applyFilter(self, filter: 'np.ndarray'):
+    def applyLinearFilter(self, filter: 'np.ndarray'):
         image = copy.deepcopy(self)
         data = np.array(image.data)
         n, m = filter.shape
@@ -127,6 +127,23 @@ class PGMImage:
                     continue
                 portion = data[rstart:rend + 1, cstart:cend + 1]
                 pixel = int(np.sum(np.multiply(portion, filter)))
-                image.data[r][c] = int(pixel)
+                image.data[r][c] = pixel
+
+        return image
+
+    def applyMedianFilter(self, n: 'int', m: 'int'):
+        image = copy.deepcopy(self)
+        data = np.array(image.data)
+        for r in range(image.rows):
+            for c in range(image.cols):
+                rstart = r - n // 2
+                rend = r + n // 2
+                cstart = c - m // 2
+                cend = c + m // 2
+                if rstart < 0 or rend >= image.rows or cstart < 0 or cend >= image.cols:
+                    continue
+                block = data[rstart:rend + 1, cstart:cend + 1]
+                pixel = int(np.median(block))
+                image.data[r][c] = pixel
 
         return image
