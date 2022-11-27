@@ -1,3 +1,3 @@
 import examples
 
-examples.medianFilter()
+examples.enhanceImage()

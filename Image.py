@@ -65,6 +65,15 @@ class PGMImage:
 
         return sum / (self.rows * self.cols)
 
+    def getVariance(self):
+        mean = self.getMean()
+        sum = 0
+        for row in self.data:
+            for pixel in row:
+                sum += (pixel - mean) ** 2
+        sum /= self.rows * self.cols
+        return sum
+
     def getEqualizedHistImage(self):
         image = copy.deepcopy(self)
         histCummul = image.getCummulatedHistogram()
@@ -148,3 +157,11 @@ class PGMImage:
                 image.data[r][c] = pixel
 
         return image
+
+    def signalToNoiseRatio(original: 'PGMImage', treated: 'PGMImage'):
+        var = original.getVariance() * original.rows * original.cols
+        det = 0
+        for r in range(original.rows):
+            for c in range(original.cols):
+                det += (original.data[r][c] - treated.data[r][c]) ** 2
+        return math.sqrt(var / det)

@@ -67,3 +67,42 @@ def medianFilter():
 
     filtered = noisyChat.applyMedianFilter(3, 3)
     filtered.writeToFile(helpers.getOutputFilePath("median-filtered.pgm"))
+
+
+def enhanceImage():
+    filepath = './images/chat.pgm'
+    chat = PGMImage.readFromFile(filepath=filepath)
+
+    filter = np.array([
+        [-1, -1, -1],
+        [-1, 9, -1],
+        [-1, -1, -1]
+    ])
+    enhanced = chat.applyLinearFilter(filter)
+    enhanced.writeToFile(helpers.getOutputFilePath("enhanced-chat.pgm"))
+
+
+def compareMedianAndMean():
+    filepath = './images/chat.pgm'
+    chat = PGMImage.readFromFile(filepath=filepath)
+
+    noisyChatPath = helpers.getOutputFilePath("noisy-chat.pgm")
+    if os.path.exists(noisyChatPath):
+        noisyChat = PGMImage.readFromFile(noisyChatPath)
+    else:
+        noisyChat = chat.addNoise()
+        noisyChat.writeToFile(helpers.getOutputFilePath("noisy-chat.pgm"))
+
+    filter = np.ones((3, 3)) * 1/9
+    meanFiltered = noisyChat.applyLinearFilter(filter)
+    meanFiltered.writeToFile(helpers.getOutputFilePath("mean-filtered.pgm"))
+
+    medianFiltered = noisyChat.applyMedianFilter(3, 3)
+    medianFiltered.writeToFile(
+        helpers.getOutputFilePath("median-filtered.pgm"))
+
+    meanSNR = PGMImage.signalToNoiseRatio(chat, meanFiltered)
+    medianSNR = PGMImage.signalToNoiseRatio(chat, medianFiltered)
+
+    print(f"Signal To Noise Ratio of the mean filtered image {meanSNR}")
+    print(f"Signal To Noise Ratio of the median filtered image {medianSNR}")
