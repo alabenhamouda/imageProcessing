@@ -1,5 +1,7 @@
 import copy
 import math
+from operator import itemgetter
+from linearTransformation import LinearTransformation
 
 
 class PGMImage:
@@ -69,6 +71,29 @@ class PGMImage:
         for i in range(image.maxLevel + 1):
             lvls[i] = math.floor(image.maxLevel / n * histCummul[i])
 
+        for r in range(image.rows):
+            for c in range(image.cols):
+                image.data[r][c] = lvls[image.data[r][c]]
+
+        return image
+
+    def linearTransform(self, points):
+        image = copy.deepcopy(self)
+        points = sorted(points, key=itemgetter(0, 1))
+        points.insert(0, (0, 0))
+        points.append((self.maxLevel, self.maxLevel))
+        lines = []
+        for i in range(1, len(points)):
+            if points[i - 1][0] == points[i][0]:
+                raise Exception(
+                    "two points cannot be on the same vertical line")
+            lines.append(LinearTransformation(points[i - 1], points[i]))
+        lvls = [0] * (image.maxLevel + 1)
+        lineIdx = 0
+        for lvl in range(image.maxLevel + 1):
+            if lvl > points[lineIdx + 1][0]:
+                lineIdx += 1
+            lvls[lvl] = int(lines[lineIdx].transform(lvl))
         for r in range(image.rows):
             for c in range(image.cols):
                 image.data[r][c] = lvls[image.data[r][c]]
