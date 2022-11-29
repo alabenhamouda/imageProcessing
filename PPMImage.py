@@ -109,41 +109,30 @@ class PPMImage:
         ret = np.cumsum(ret)
         return ret
 
-    def __meanPerClass(self, color: 'int'):
-        prob = self.probability(color)
-        for i in range(self.maxLevel + 1):
-            prob[i] *= i
-        return np.cumsum(prob)
-
-    def __classProperty(cumulatedList: 'list', sep: 'int', lower: 'bool'):
-        if lower:
-            if sep == 0:
-                return 0
-            else:
-                return cumulatedList[sep - 1]
-        else:
-            return cumulatedList[len(cumulatedList) - 1] - \
-                PPMImage.__classProperty(
-                    cumulatedList, sep, lower=True)
-
     def __otsu(self, color):
-        probCumul = self.cumulatedProbability(color)
-        mean = self.__meanPerClass(color)
-        var = float('-inf')
-        for sep in range(1, self.maxLevel + 1):
-            w0 = PPMImage.__classProperty(probCumul, sep, lower=True)
-            w1 = PPMImage.__classProperty(probCumul, sep, lower=False)
-            mean0 = PPMImage.__classProperty(mean, sep, lower=True)
-            mean0 /= w0
-            mean1 = PPMImage.__classProperty(mean, sep, lower=False)
-            mean1 /= w1
+        prob = self.probability(color)
+        probCumul = np.cumsum(prob)
+        a = np.arange(self.maxLevel + 1)
+        mean = a * prob
+        mean = np.cumsum(mean)
 
-            newVar = w0 * w1 * ((mean0 - mean1) ** 2)
-            if newVar > var:
-                ret = sep
-                newVar = var
+        val = np.inf
+        thresh = -1
+        for lvl in range(0, self.maxLevel):
+            q1 = probCumul[lvl]
+            q2 = probCumul[self.maxLevel] - q1
+            m1 = mean[lvl] / q1
+            m2 = (mean[self.maxLevel] - mean[lvl]) / q2
+            p1, p2 = np.hsplit(prob, [lvl + 1])
+            a1, a2 = np.hsplit(a, [lvl + 1])
+            v1 = np.sum(((a1 - m1) ** 2) * p1) / q1
+            v2 = np.sum(((a2 - m2) ** 2) * p2) / q2
+            v = q1 * v1 + q2 * v2
+            if v < val:
+                val = v
+                thresh = lvl
 
-        return ret
+        return thresh
 
     def otsu(self):
         return self.__otsu(0), self.__otsu(1), self.__otsu(2)

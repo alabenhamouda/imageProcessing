@@ -138,8 +138,8 @@ def thresholdPPMImage():
 
 
 def otsu():
-    filepath = './images/roi.ppm'
-    image = PPMImage.readFromFile(filepath)
+    filepath = './images/car.jpeg'
+    image = PPMImage.convertImageToPPM(filepath)
     o1, o2, o3 = image.otsu()
     print(o1)
     print(o2)
@@ -152,9 +152,10 @@ def otsuCv():
     filepath = './images/roi.jpg'
     img = cv.imread(filepath)
     b, g, r = cv.split(img)
-    _, bdst = cv.threshold(b, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-    _, gdst = cv.threshold(g, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-    _, rdst = cv.threshold(r, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    tb, bdst = cv.threshold(b, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    tg, gdst = cv.threshold(g, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    tr, rdst = cv.threshold(r, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    print(tb, tg, tr)
     dst = cv.merge((bdst, gdst, rdst))
     cv.imshow('image', dst)
     cv.waitKey(0)
