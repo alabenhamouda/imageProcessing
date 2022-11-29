@@ -128,8 +128,20 @@ def edgeDetection():
     result.writeToFile(helpers.getOutputFilePath("edge-detection.pgm"))
 
 
-def readWritePPMImage():
-    filepath = './images/blackbuck.ascii.ppm'
+def thresholdPPMImage():
+    filepath = './images/chat.ppm'
     image = PPMImage.readFromFile(filepath)
 
-    image.writeToFile(helpers.getOutputFilePath('blackbuck.ppm'))
+    transformed = image.rgbThreshold(50, 50, 50)
+    transformed.writeToFile(helpers.getOutputFilePath('blackbuck.ppm'))
+
+
+def otsu():
+    filepath = './images/snail.ascii.ppm'
+    image = PPMImage.readFromFile(filepath)
+    o1, o2, o3 = image.otsu()
+    print(o1)
+    print(o2)
+    print(o3)
+    transformed = image.rgbThreshold(o1, o2, o3)
+    transformed.writeToFile(helpers.getOutputFilePath('otsu.ppm'))
