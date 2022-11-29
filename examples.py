@@ -4,6 +4,7 @@ import helpers
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2 as cv
 
 
 def equalizeHist():
@@ -137,7 +138,7 @@ def thresholdPPMImage():
 
 
 def otsu():
-    filepath = './images/snail.ascii.ppm'
+    filepath = './images/roi.ppm'
     image = PPMImage.readFromFile(filepath)
     o1, o2, o3 = image.otsu()
     print(o1)
@@ -145,3 +146,23 @@ def otsu():
     print(o3)
     transformed = image.rgbThreshold(o1, o2, o3)
     transformed.writeToFile(helpers.getOutputFilePath('otsu.ppm'))
+
+
+def otsuCv():
+    filepath = './images/roi.jpg'
+    img = cv.imread(filepath)
+    b, g, r = cv.split(img)
+    _, bdst = cv.threshold(b, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    _, gdst = cv.threshold(g, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    _, rdst = cv.threshold(r, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    dst = cv.merge((bdst, gdst, rdst))
+    cv.imshow('image', dst)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+
+
+def convertImageToPPM():
+    filepath = './images/roi.jpg'
+    image = PPMImage.convertImageToPPM(filepath)
+
+    image.writeToFile(helpers.getOutputFilePath("roi.ppm"))

@@ -1,9 +1,15 @@
 import numpy as np
 import copy
-import math
+import cv2
 
 
 class PPMImage:
+    def __init__(self) -> None:
+        self.type = "P3"
+        self.rows = self.cols = 0
+        self.maxLevel = 0
+        self.data = None
+
     def readFromFile(filepath):
         with open(filepath) as f:
             lines = f.readlines()
@@ -41,6 +47,15 @@ class PPMImage:
             datastr = '\n'.join([' '.join([' '.join(str(value)
                                                     for value in pixel) for pixel in row]) for row in self.data])
             f.writelines([datastr])
+
+    def convertImageToPPM(filepath: 'str') -> 'PPMImage':
+        img = cv2.imread(filepath)
+        ppmImage = PPMImage()
+        ppmImage.rows, ppmImage.cols, _ = img.shape
+        ppmImage.data = img[:, :]
+        ppmImage.maxLevel = img.max()
+
+        return ppmImage
 
     def rgbThreshold(self, tr, tg, tb):
         image = copy.deepcopy(self)
