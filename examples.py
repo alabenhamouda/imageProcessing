@@ -14,10 +14,10 @@ def equalizeHist():
     fig, _ = helpers.plot_histogram(balloon.getHistogram())
     fig.suptitle("normal")
 
-    equalizedBalloon = balloon.getEqualizedHistImage()
-    equalizedBalloon.writeToFile(helpers.getOutputFilePath("equalized.pgm"))
+    balloon.equalizeHistogram()
+    balloon.writeToFile(helpers.getOutputFilePath("equalized.pgm"))
 
-    fig, _ = helpers.plot_histogram(equalizedBalloon.getHistogram())
+    fig, _ = helpers.plot_histogram(balloon.getHistogram())
     fig.suptitle("equalized")
 
     plt.show()

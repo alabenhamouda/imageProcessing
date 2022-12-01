@@ -1,17 +1,18 @@
-import copy
 import math
-import random
 import numpy as np
-from operator import itemgetter
-from linearTransformation import LinearTransformation
+from Image import Image
 
 
-class PGMImage:
+class PGMImage(Image):
+    def __init__(self, rows, cols, maxLevel) -> None:
+        super().__init__(rows, cols, maxLevel)
+        self.type = "P2"
+        self.__data = np.zeros((rows, cols), dtype=np.int64)
 
     def readFromFile(filepath):
         with open(filepath) as f:
             lines = f.readlines()
-            image = PGMImage()
+            image = PGMImage(0, 0, 0)
             image.type = lines[0].strip()
             i = 1
             if lines[i].startswith('#'):
@@ -26,9 +27,8 @@ class PGMImage:
                 allPixels.extend(pixelsInLine)
             if len(allPixels) != image.rows * image.cols:
                 raise Exception("Image is not well formatted")
-            image.data = []
-            for i in range(0, image.rows * image.cols, image.cols):
-                image.data.append(allPixels[i:i+image.cols])
+            image.__data = np.array(allPixels).reshape(
+                (image.rows, image.cols))
 
             return image
 
@@ -38,131 +38,39 @@ class PGMImage:
             f.writelines([f'{self.cols} {self.rows}\n'])
             f.writelines([str(self.maxLevel) + '\n'])
             f.writelines([' '.join(str(pixel) for pixel in row) + '\n'
-                         for row in self.data])
+                         for row in self.__data])
 
     def getHistogram(self):
-        occ = {}
-        for row in self.data:
-            for pixel in row:
-                if pixel not in occ:
-                    occ[pixel] = 0
-                occ[pixel] += 1
-        return [occ.get(level, 0) for level in range(self.maxLevel + 1)]
+        return self._histogram(self.__data)
 
     def getCummulatedHistogram(self):
-        hist = self.getHistogram()
-        histCummul = [0] * len(hist)
-        histCummul[0] = hist[0]
-        for i in range(1, len(hist)):
-            histCummul[i] = histCummul[i - 1] + hist[i]
-        return histCummul
+        return self._cumulatedHistogram(self.__data)
 
     def getMean(self):
-        sum = 0
-        for row in self.data:
-            for pixel in row:
-                sum += pixel
-
-        return sum / (self.rows * self.cols)
+        return self._mean(self.__data)
 
     def getVariance(self):
-        mean = self.getMean()
-        sum = 0
-        for row in self.data:
-            for pixel in row:
-                sum += (pixel - mean) ** 2
-        sum /= self.rows * self.cols
-        return sum
+        return self._variance(self.__data)
 
-    def getEqualizedHistImage(self):
-        image = copy.deepcopy(self)
-        histCummul = image.getCummulatedHistogram()
-        lvls = [0] * (image.maxLevel + 1)
-        n = image.rows * image.cols
-        for i in range(image.maxLevel + 1):
-            lvls[i] = math.floor(image.maxLevel / n * histCummul[i])
-
-        for r in range(image.rows):
-            for c in range(image.cols):
-                image.data[r][c] = lvls[image.data[r][c]]
-
-        return image
+    def equalizeHistogram(self):
+        self._equalizeHist(self.__data)
+        return self
 
     def linearTransform(self, points):
-        image = copy.deepcopy(self)
-        points = sorted(points, key=itemgetter(0, 1))
-        points.insert(0, (0, 0))
-        points.append((self.maxLevel, self.maxLevel))
-        lines = []
-        for i in range(1, len(points)):
-            if points[i - 1][0] == points[i][0]:
-                raise Exception(
-                    "two points cannot be on the same vertical line")
-            lines.append(LinearTransformation(points[i - 1], points[i]))
-        lvls = [0] * (image.maxLevel + 1)
-        lineIdx = 0
-        for lvl in range(image.maxLevel + 1):
-            if lvl > points[lineIdx + 1][0]:
-                lineIdx += 1
-            lvls[lvl] = int(lines[lineIdx].transform(lvl))
-        for r in range(image.rows):
-            for c in range(image.cols):
-                image.data[r][c] = lvls[image.data[r][c]]
-
-        return image
+        self._linearTransform(self.__data, points)
+        return self
 
     def addNoise(self):
-        image = copy.deepcopy(self)
-        for r in range(image.rows):
-            for c in range(image.cols):
-                randomInt = random.randint(0, 20)
-                if randomInt == 0:
-                    image.data[r][c] = 0
-                elif randomInt == 20:
-                    image.data[r][c] = 255
-        return image
+        self._addNoise(self.__data)
+        return self
 
     def applyLinearFilter(self, filter: 'np.ndarray'):
-        image = copy.deepcopy(self)
-        data = np.array(image.data)
-        n, m = filter.shape
-        for r in range(image.rows):
-            for c in range(image.cols):
-                if n % 2 == 0:
-                    rstart = r
-                    rend = r + n - 1
-                    cstart = c
-                    cend = c + m - 1
-                else:
-                    rstart = r - n // 2
-                    rend = r + n // 2
-                    cstart = c - m // 2
-                    cend = c + m // 2
-                if rstart < 0 or rend >= image.rows or cstart < 0 or cend >= image.cols:
-                    continue
-                portion = data[rstart:rend + 1, cstart:cend + 1]
-                pixel = np.sum(np.multiply(portion, filter))
-                pixel = int(np.clip(pixel, 0, image.maxLevel))
-                image.data[r][c] = pixel
-
-        return image
+        self._applyLinearFilter(self.__data, filter)
+        return self
 
     def applyMedianFilter(self, n: 'int', m: 'int'):
-        image = copy.deepcopy(self)
-        data = np.array(image.data)
-        for r in range(image.rows):
-            for c in range(image.cols):
-                rstart = r - n // 2
-                rend = r + n // 2
-                cstart = c - m // 2
-                cend = c + m // 2
-                if rstart < 0 or rend >= image.rows or cstart < 0 or cend >= image.cols:
-                    continue
-                block = data[rstart:rend + 1, cstart:cend + 1]
-                pixel = int(np.median(block))
-                image.data[r][c] = pixel
-
-        return image
+        self._applyMedianFilter(self.__data, n, m)
+        return self
 
     def signalToNoiseRatio(original: 'PGMImage', treated: 'PGMImage'):
         var = original.getVariance() * original.rows * original.cols
