@@ -13,10 +13,20 @@ class PPMImage(Image):
         self.__b = np.zeros((rows, cols), dtype=np.int64)
 
     def __getitem__(self, pos):
+        last = None
+        if isinstance(pos, tuple):
+            if len(pos) > 3:
+                raise Exception("Invalid length of slice objects tuple")
+            if len(pos) == 3:
+                pos, last = pos[:-1], pos[-1]
+
         red = self.__r[pos]
         green = self.__g[pos]
         blue = self.__b[pos]
-        return np.stack([red, green, blue], axis=np.ndim(red))
+        ret = np.stack([red, green, blue], axis=np.ndim(red))
+        if last != None:
+            ret = ret[:, :, last]
+        return ret
 
     def readFromFile(filepath):
         with open(filepath) as f:
