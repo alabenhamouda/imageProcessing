@@ -167,3 +167,10 @@ def convertImageToPPM():
     image = PPMImage.convertImageToPPM(filepath)
 
     image.writeToFile(helpers.getOutputFilePath("roi.ppm"))
+
+
+def readWritePPM():
+    filepath = './images/roi.ppm'
+    image = PPMImage.readFromFile(filepath)
+
+    image.writeToFile(helpers.getOutputFilePath("roi.ppm"))

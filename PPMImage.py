@@ -1,19 +1,27 @@
 import numpy as np
 import copy
 import cv2
+from Image import Image
 
 
-class PPMImage:
-    def __init__(self) -> None:
+class PPMImage(Image):
+    def __init__(self, rows, cols, maxLevel) -> None:
+        super().__init__(rows, cols, maxLevel)
         self.type = "P3"
-        self.rows = self.cols = 0
-        self.maxLevel = 0
-        self.data = None
+        self.__r = np.zeros((rows, cols), dtype=np.int64)
+        self.__g = np.zeros((rows, cols), dtype=np.int64)
+        self.__b = np.zeros((rows, cols), dtype=np.int64)
+
+    def __getitem__(self, pos):
+        red = self.__r[pos]
+        green = self.__g[pos]
+        blue = self.__b[pos]
+        return np.stack([red, green, blue], axis=np.ndim(red))
 
     def readFromFile(filepath):
         with open(filepath) as f:
             lines = f.readlines()
-            image = PPMImage()
+            image = PPMImage(0, 0, 0)
             image.type = lines[0].strip()
             i = 1
             if lines[i].startswith('#'):
@@ -29,13 +37,11 @@ class PPMImage:
                 allPixels.extend(pixelsInLine)
             if len(allPixels) != image.rows * image.cols * 3:
                 raise Exception("Image is not well formatted")
-            image.data = []
-            for i in range(0, image.rows * image.cols * 3, image.cols * 3):
-                rowPixels = allPixels[i:i+image.cols * 3]
-                row = []
-                for j in range(0, image.cols * 3, 3):
-                    row.append(rowPixels[j:j + 3])
-                image.data.append(row)
+            data = np.array(allPixels)
+            data = data.reshape((image.rows, image.cols, 3))
+            image.__r = data[:, :, 0]
+            image.__g = data[:, :, 1]
+            image.__b = data[:, :, 2]
 
             return image
 
@@ -44,16 +50,19 @@ class PPMImage:
             f.writelines([self.type + '\n'])
             f.writelines([f'{self.cols} {self.rows}\n'])
             f.writelines([str(self.maxLevel) + '\n'])
+            data = self[:, :]
             datastr = '\n'.join([' '.join([' '.join(str(value)
-                                                    for value in pixel) for pixel in row]) for row in self.data])
+                                                    for value in pixel) for pixel in row]) for row in data])
             f.writelines([datastr])
 
     def convertImageToPPM(filepath: 'str') -> 'PPMImage':
         img = cv2.imread(filepath)
-        ppmImage = PPMImage()
-        ppmImage.rows, ppmImage.cols, _ = img.shape
-        ppmImage.data = img[:, :]
-        ppmImage.maxLevel = img.max()
+        rows, cols, _ = img.shape
+        maxLevel = img.max()
+        ppmImage = PPMImage(rows, cols, maxLevel)
+        ppmImage.__r = img[:, :, 0]
+        ppmImage.__g = img[:, :, 1]
+        ppmImage.__b = img[:, :, 2]
 
         return ppmImage
 
