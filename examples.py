@@ -175,3 +175,11 @@ def readWritePPM():
     image = PPMImage.readFromFile(filepath)
 
     image.writeToFile(helpers.getOutputFilePath("roi.ppm"))
+
+
+def pgmtoppm():
+    filepath = './images/chat.pgm'
+    chat = PGMImage.readFromFile(filepath=filepath)
+    chatppm = PPMImage(chat.rows, chat.cols, chat.maxLevel)
+    chatppm._PPMImage__r = chatppm._PPMImage__g = chatppm._PPMImage__b = chat._PGMImage__data
+    chatppm.writeToFile(helpers.getOutputFilePath("chatppm.ppm"))
