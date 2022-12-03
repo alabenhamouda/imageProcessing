@@ -5,6 +5,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2 as cv
+import copy
 
 
 def equalizeHist():
@@ -92,11 +93,11 @@ def compareMedianAndMean():
     if os.path.exists(noisyChatPath):
         noisyChat = PGMImage.readFromFile(noisyChatPath)
     else:
-        noisyChat = chat.addNoise()
+        noisyChat = copy.deepcopy(chat).addNoise()
         noisyChat.writeToFile(helpers.getOutputFilePath("noisy-chat.pgm"))
 
     filter = np.ones((3, 3)) * 1/9
-    meanFiltered = noisyChat.applyLinearFilter(filter)
+    meanFiltered = copy.deepcopy(noisyChat).applyLinearFilter(filter)
     meanFiltered.writeToFile(helpers.getOutputFilePath("mean-filtered.pgm"))
 
     medianFiltered = noisyChat.applyMedianFilter(3, 3)
@@ -130,11 +131,11 @@ def edgeDetection():
 
 
 def thresholdPPMImage():
-    filepath = './images/chat.ppm'
-    image = PPMImage.readFromFile(filepath)
+    filepath = './images/roi.jpg'
+    image = PPMImage.convertImageToPPM(filepath)
 
-    transformed = image.rgbThreshold(50, 50, 50)
-    transformed.writeToFile(helpers.getOutputFilePath('blackbuck.ppm'))
+    image.rgbThreshold(50, 50, 50)
+    image.writeToFile(helpers.getOutputFilePath('blackbuck.ppm'))
 
 
 def otsu():
@@ -144,8 +145,8 @@ def otsu():
     print(o1)
     print(o2)
     print(o3)
-    transformed = image.rgbThreshold(o1, o2, o3)
-    transformed.writeToFile(helpers.getOutputFilePath('otsu.ppm'))
+    image.rgbThreshold(o1, o2, o3)
+    image.writeToFile(helpers.getOutputFilePath('otsu.ppm'))
 
 
 def otsuCv():

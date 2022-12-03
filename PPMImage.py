@@ -25,7 +25,10 @@ class PPMImage(Image):
         blue = self.__b[pos]
         ret = np.stack([red, green, blue], axis=np.ndim(red))
         if last != None:
-            ret = ret[:, :, last]
+            if np.ndim(ret) == 1:
+                ret = ret[last]
+            else:
+                ret = ret[:, :, last]
         return ret
 
     def readFromFile(filepath):
@@ -77,48 +80,45 @@ class PPMImage(Image):
         return ppmImage
 
     def rgbThreshold(self, tr, tg, tb):
-        image = copy.deepcopy(self)
-        for r in range(image.rows):
-            for c in range(image.cols):
-                if image.data[r][c][0] < tr:
-                    image.data[r][c][0] = 0
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if self.__r[r][c] < tr:
+                    self.__r[r][c] = 0
                 else:
-                    image.data[r][c][0] = image.maxLevel
-                if image.data[r][c][1] < tg:
-                    image.data[r][c][1] = 0
+                    self.__r[r][c] = self.maxLevel
+                if self.__g[r][c] < tg:
+                    self.__g[r][c] = 0
                 else:
-                    image.data[r][c][1] = image.maxLevel
-                if image.data[r][c][2] < tb:
-                    image.data[r][c][2] = 0
+                    self.__g[r][c] = self.maxLevel
+                if self.__b[r][c] < tb:
+                    self.__b[r][c] = 0
                 else:
-                    image.data[r][c][2] = image.maxLevel
-        return image
+                    self.__b[r][c] = self.maxLevel
+        return self
 
     def andThreshold(self, threshold):
-        image = copy.deepcopy(self)
-        for r in range(image.rows):
-            for c in range(image.cols):
-                pixel = image.data[r][c]
+        for r in range(self.rows):
+            for c in range(self.cols):
+                pixel = self[r, c]
                 if pixel[0] < threshold or pixel[1] < threshold or pixel[2] < threshold:
-                    image.data[r][c][0] = image.data[r][c][1] = image.data[r][c][2] = 0
+                    self.__r[r][c] = self.__g[r][c] = self.__b[r][c] = 0
 
-        return image
+        return self
 
     def orThreshold(self, threshold):
-        image = copy.deepcopy(self)
-        for r in range(image.rows):
-            for c in range(image.cols):
-                pixel = image.data[r][c]
+        for r in range(self.rows):
+            for c in range(self.cols):
+                pixel = self[r, c]
                 if pixel[0] < threshold and pixel[1] < threshold and pixel[2] < threshold:
-                    image.data[r][c][0] = image.data[r][c][1] = image.data[r][c][2] = 0
+                    self.__r[r][c] = self.__g[r][c] = self.__b[r][c] = 0
 
-        return image
+        return self
 
     def probability(self, color: 'int'):
         ret = np.zeros(self.maxLevel + 1)
         for r in range(self.rows):
             for c in range(self.cols):
-                ret[self.data[r][c][color]] += 1
+                ret[self[r, c, color]] += 1
 
         ret /= self.rows * self.cols
         return ret

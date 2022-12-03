@@ -77,5 +77,5 @@ class PGMImage(Image):
         det = 0
         for r in range(original.rows):
             for c in range(original.cols):
-                det += (original.data[r][c] - treated.data[r][c]) ** 2
+                det += (original.__data[r][c] - treated.__data[r][c]) ** 2
         return math.sqrt(var / det)
