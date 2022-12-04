@@ -1,7 +1,8 @@
 import numpy as np
-import copy
+import pathlib
 import cv2
 from Image import Image
+from PGMImage import PGMImage
 
 
 class PPMImage(Image):
@@ -69,15 +70,28 @@ class PPMImage(Image):
             f.writelines([datastr])
 
     def convertImageToPPM(filepath: 'str') -> 'PPMImage':
-        img = cv2.imread(filepath)
-        rows, cols, _ = img.shape
-        maxLevel = img.max()
-        ppmImage = PPMImage(rows, cols, maxLevel)
-        ppmImage.__r = img[:, :, 0]
-        ppmImage.__g = img[:, :, 1]
-        ppmImage.__b = img[:, :, 2]
+        extension = pathlib.Path(filepath).suffix
+        if extension == ".ppm":
+            return PPMImage.readFromFile(filepath)
+        elif extension == ".pgm":
+            pgmImage = PGMImage.readFromFile(filepath)
+            data = pgmImage._PGMImage__data
+            ppmImage = PPMImage(
+                pgmImage.rows, pgmImage.cols, pgmImage.maxLevel)
+            ppmImage.__r = data
+            ppmImage.__g = np.array(data)
+            ppmImage.__b = np.array(data)
+            return ppmImage
+        else:
+            img = cv2.imread(filepath)
+            rows, cols, _ = img.shape
+            maxLevel = img.max()
+            ppmImage = PPMImage(rows, cols, maxLevel)
+            ppmImage.__r = img[:, :, 0]
+            ppmImage.__g = img[:, :, 1]
+            ppmImage.__b = img[:, :, 2]
 
-        return ppmImage
+            return ppmImage
 
     def rgbThreshold(self, tr, tg, tb):
         for r in range(self.rows):
@@ -155,3 +169,9 @@ class PPMImage(Image):
 
     def otsu(self):
         return self.__otsu(0), self.__otsu(1), self.__otsu(2)
+
+    def applyLinearFilter(self, filter: 'np.ndarray'):
+        self._applyLinearFilter(self.__r, filter)
+        self._applyLinearFilter(self.__g, filter)
+        self._applyLinearFilter(self.__b, filter)
+        return self
