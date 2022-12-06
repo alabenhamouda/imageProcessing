@@ -175,3 +175,9 @@ class PPMImage(Image):
         self._applyLinearFilter(self.__g, filter)
         self._applyLinearFilter(self.__b, filter)
         return self
+
+    def applyMedianFilter(self, n, m):
+        self._applyMedianFilter(self.__r, n, m)
+        self._applyMedianFilter(self.__g, n, m)
+        self._applyMedianFilter(self.__b, n, m)
+        return self
