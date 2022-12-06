@@ -17,11 +17,11 @@ def applyFilter(file: 'typing.TextIO', kernel: 'np.ndarray'):
     if file is None:
         return
     kernel = kernel.astype(dtype=float)
-    # image = PPMImage.convertImageToPPM(file.name)
-    # image.applyLinearFilter(kernel)
-    image = cv.imread(file.name)
-    filtered = cv.filter2D(image, -1, kernel)
-    return filtered
+    image = PPMImage.convertImageToPPM(file.name)
+    image.applyLinearFilter(kernel)
+    # image = cv.imread(file.name)
+    # filtered = cv.filter2D(image, -1, kernel)
+    return image[:,:]
 
 def applyMedianFilter(file: 'typing.TextIO'):
     if file is None:

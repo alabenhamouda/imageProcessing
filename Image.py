@@ -82,7 +82,7 @@ class Image:
         n, m = filter.shape
         for r in range(self.rows):
             for c in range(self.cols):
-                if n % 2 == 0:
+                if n % 2 == 0 or m % 2 == 0:
                     rstart = r
                     rend = r + n - 1
                     cstart = c
