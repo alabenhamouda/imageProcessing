@@ -181,3 +181,12 @@ class PPMImage(Image):
         self._applyMedianFilter(self.__g, n, m)
         self._applyMedianFilter(self.__b, n, m)
         return self
+    
+    def mean(self):
+        return self._mean(self.__r), self._mean(self.__g), self._mean(self.__b)
+
+    def variance(self):
+        return self._variance(self.__r), self._variance(self.__g), self._variance(self.__b)
+
+    def histogram(self):
+        return self._histogram(self.__r), self._histogram(self.__g), self._histogram(self.__b)
