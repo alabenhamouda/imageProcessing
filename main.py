@@ -36,6 +36,13 @@ def applyMedianFilter(file: 'typing.TextIO'):
     image = cv.imread(file.name)
     filtered = cv.medianBlur(image, 5)
     return filtered
+    
+def equalizeHist(file: typing.TextIO):
+    if file is None:
+        return None
+    image = PPMImage.convertImageToPPM(file.name)
+    image.equalizeHistogram()
+    return image[:,:]
 
 def onDropdownChange(file: typing.TextIO, dropdown_item):
     if file is None:
@@ -106,5 +113,12 @@ with gr.Blocks() as demo:
                 with gr.Column():
                     outputImage = gr.Image()
                     applyButton.click(fn=applyMedianFilter, inputs=dropFile, outputs=outputImage)
+        with gr.Tab("Equalize histogram"):
+            with gr.Row():
+                with gr.Column():
+                    applyButton = gr.Button("Equalize histogram")
+                with gr.Column():
+                    outputImage = gr.Image()
+                    applyButton.click(fn=equalizeHist, inputs=dropFile, outputs=outputImage)
 
 demo.launch()

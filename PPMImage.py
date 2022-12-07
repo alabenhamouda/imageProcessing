@@ -190,3 +190,9 @@ class PPMImage(Image):
 
     def histogram(self):
         return self._histogram(self.__r), self._histogram(self.__g), self._histogram(self.__b)
+
+    def equalizeHistogram(self):
+        self._equalizeHist(self.__r)
+        self._equalizeHist(self.__g)
+        self._equalizeHist(self.__b)
+        return self
