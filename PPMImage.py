@@ -196,3 +196,9 @@ class PPMImage(Image):
         self._equalizeHist(self.__g)
         self._equalizeHist(self.__b)
         return self
+    
+    def addNoise(self):
+        self._addNoise(self.__r)
+        self._addNoise(self.__g)
+        self._addNoise(self.__b)
+        return self

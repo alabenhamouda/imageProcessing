@@ -72,6 +72,13 @@ def onDropdownChange(file: typing.TextIO, dropdown_item):
         plot_b.suptitle("Histogram of the blue intensity level")
         return gr.Dataframe.update(visible=False), gr.Plot.update(visible=True, value=plot_r), gr.Plot.update(visible=True, value=plot_g), gr.Plot.update(visible=True, value=plot_b)
 
+def addNoise(file: typing.TextIO):
+    if file is None:
+        return None
+    image = PPMImage.convertImageToPPM(file.name)
+    image.addNoise()
+    return image[:,:]
+
 with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
@@ -92,6 +99,13 @@ with gr.Blocks() as demo:
                     plot_b = gr.Plot(visible=False)
                     variable_to_compute.change(fn=onDropdownChange, inputs=[dropFile, variable_to_compute], outputs=[values, plot_r, plot_g, plot_b])
                     recompute.click(fn=onDropdownChange, inputs=[dropFile, variable_to_compute], outputs=[values, plot_r, plot_g, plot_b])
+        with gr.Tab("add noise"):
+            with gr.Row():
+                with gr.Column():
+                    applyButton = gr.Button("Add noise")
+                with gr.Column():
+                    outputImage = gr.Image()
+                    applyButton.click(fn=addNoise, inputs=dropFile, outputs=outputImage)
         with gr.Tab("linear filter"):
             with gr.Row():
                 with gr.Column():
