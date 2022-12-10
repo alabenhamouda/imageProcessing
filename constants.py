@@ -1,3 +1,6 @@
 MEAN = "mean"
 VARIANCE = "variance"
 HISTOGRAM = "histogram"
+NORMALTHRESHOLDING = "normal thresholding"
+ANDTHRESHOLDING = "AND thresholding"
+ORTHRESHOLDING = "OR thresholding"

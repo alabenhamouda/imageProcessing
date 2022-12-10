@@ -96,7 +96,7 @@ linear_transform_fig, linear_transform_ax = plt.subplots()
 
 def plotTransformationLines(points: np.ndarray):
     try:
-        points = points.astype(float)
+        points = points.astype(int)
     except:
         return None
     points = np.insert(points, 0, [[0, 0]], axis=0)
@@ -104,6 +104,29 @@ def plotTransformationLines(points: np.ndarray):
     points = np.array(sorted(points, key=itemgetter(0, 1)))
     helpers.plot_points(linear_transform_ax, points)
     return linear_transform_fig
+
+def onThresholdChange(type):
+    if type == constants.NORMALTHRESHOLDING:
+        return gr.DataFrame.update(visible=True), gr.Number.update(visible=False)
+    else:
+        return gr.DataFrame.update(visible=False), gr.Number.update(visible=True)
+
+
+def thresholdImage(file, thresholds, threshold, type):
+    if file is None:
+        return None
+    image = PPMImage.convertImageToPPM(file.name)
+    if type == constants.NORMALTHRESHOLDING:
+        try:
+            thresholds = thresholds.astype(int)
+        except:
+            return None
+        image.rgbThreshold(*thresholds[0])
+    elif type == constants.ANDTHRESHOLDING:
+        image.andThreshold(threshold)
+    elif type == constants.ORTHRESHOLDING:
+        image.orThreshold(threshold)
+    return image[:,:]
 
 with gr.Blocks() as demo:
     with gr.Row():
@@ -170,5 +193,17 @@ with gr.Blocks() as demo:
                 with gr.Column():
                     outputImage = gr.Image()
                     applyButton.click(fn=linearTransformation, inputs=[dropFile, points], outputs=outputImage)
+        with gr.Tab("Threshold image"):
+            with gr.Row():
+                with gr.Column():
+                    thresholding_types = [constants.NORMALTHRESHOLDING, constants.ANDTHRESHOLDING, constants.ORTHRESHOLDING]
+                    thresholding_type = gr.Dropdown(choices=thresholding_types, value=constants.NORMALTHRESHOLDING)
+                    thresholds = gr.DataFrame(headers=["Red", "Green", "Blue"], col_count=(3, 'fixed'), row_count=(1, 'fixed'), type="numpy", datatype="number")
+                    threshold = gr.Number(label="threshold", visible=False)
+                    thresholding_type.change(fn=onThresholdChange, inputs=thresholding_type, outputs=[thresholds, threshold])
+                    applyButton = gr.Button("Apply thresholding on image")
+                with gr.Column():
+                    outputImage = gr.Image()
+                    applyButton.click(fn=thresholdImage, inputs=[dropFile, thresholds, threshold, thresholding_type], outputs=outputImage)
 
 demo.launch()
