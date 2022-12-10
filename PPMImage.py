@@ -128,47 +128,8 @@ class PPMImage(Image):
 
         return self
 
-    def probability(self, color: 'int'):
-        ret = np.zeros(self.maxLevel + 1)
-        for r in range(self.rows):
-            for c in range(self.cols):
-                ret[self[r, c, color]] += 1
-
-        ret /= self.rows * self.cols
-        return ret
-
-    def cumulatedProbability(self, color: 'int'):
-        ret = self.probability(color)
-        ret = np.cumsum(ret)
-        return ret
-
-    def __otsu(self, color):
-        prob = self.probability(color)
-        probCumul = np.cumsum(prob)
-        a = np.arange(self.maxLevel + 1)
-        mean = a * prob
-        mean = np.cumsum(mean)
-
-        val = np.inf
-        thresh = -1
-        for lvl in range(0, self.maxLevel):
-            q1 = probCumul[lvl]
-            q2 = probCumul[self.maxLevel] - q1
-            m1 = mean[lvl] / q1
-            m2 = (mean[self.maxLevel] - mean[lvl]) / q2
-            p1, p2 = np.hsplit(prob, [lvl + 1])
-            a1, a2 = np.hsplit(a, [lvl + 1])
-            v1 = np.sum(((a1 - m1) ** 2) * p1) / q1
-            v2 = np.sum(((a2 - m2) ** 2) * p2) / q2
-            v = q1 * v1 + q2 * v2
-            if v < val:
-                val = v
-                thresh = lvl
-
-        return thresh
-
     def otsu(self):
-        return self.__otsu(0), self.__otsu(1), self.__otsu(2)
+        return self._otsu(self.__r), self._otsu(self.__g), self._otsu(self.__b)
 
     def applyLinearFilter(self, filter: 'np.ndarray'):
         self._applyLinearFilter(self.__r, filter)

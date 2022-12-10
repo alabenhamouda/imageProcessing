@@ -12,14 +12,16 @@ class Image:
         self.maxLevel = maxLevel
 
     def _histogram(self, mat):
-        occ = {}
+        ret = np.zeros(self.maxLevel + 1)
         for r in range(self.rows):
             for c in range(self.cols):
-                pixel = mat[r][c]
-                if pixel not in occ:
-                    occ[pixel] = 0
-                occ[pixel] += 1
-        return [occ.get(level, 0) for level in range(self.maxLevel + 1)]
+                ret[mat[r][c]] += 1
+        return ret
+    
+    def _probability(self, mat):
+        # the probability is just the histogram divided by the number of pixels of an image
+        # as the probability of each level is the number of occurrences of the level divided by the total number of pixels
+        return self._histogram(mat) / (self.rows * self.cols)
 
     def _cumulatedHistogram(self, mat):
         hist = self._histogram(mat)
@@ -112,3 +114,28 @@ class Image:
                 block = data[rstart:rend + 1, cstart:cend + 1]
                 pixel = int(np.median(block))
                 mat[r][c] = pixel
+
+    def _otsu(self, mat):
+        prob = self._probability(mat)
+        probCumul = np.cumsum(prob)
+        a = np.arange(self.maxLevel + 1)
+        mean = a * prob
+        mean = np.cumsum(mean)
+
+        val = np.inf
+        thresh = -1
+        for lvl in range(0, self.maxLevel):
+            q1 = probCumul[lvl]
+            q2 = probCumul[self.maxLevel] - q1
+            m1 = mean[lvl] / q1
+            m2 = (mean[self.maxLevel] - mean[lvl]) / q2
+            p1, p2 = np.hsplit(prob, [lvl + 1])
+            a1, a2 = np.hsplit(a, [lvl + 1])
+            v1 = np.sum(((a1 - m1) ** 2) * p1) / q1
+            v2 = np.sum(((a2 - m2) ** 2) * p2) / q2
+            v = q1 * v1 + q2 * v2
+            if v < val:
+                val = v
+                thresh = lvl
+
+        return thresh
