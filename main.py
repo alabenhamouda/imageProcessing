@@ -128,6 +128,14 @@ def thresholdImage(file, thresholds, threshold, type):
         image.orThreshold(threshold)
     return image[:,:]
 
+def calculateOtsuThresholds(file: typing.TextIO):
+    if file is None:
+        return None
+    image = PPMImage.convertImageToPPM(file.name)
+    tr, tg, tb = image.otsu()
+    # update the threshold type to be normal thresholding and set the thresholds value on the table
+    return gr.DataFrame.update(value=[[tr, tg, tb]]), gr.Dropdown.update(value=constants.NORMALTHRESHOLDING)
+
 with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
@@ -201,6 +209,8 @@ with gr.Blocks() as demo:
                     thresholds = gr.DataFrame(headers=["Red", "Green", "Blue"], col_count=(3, 'fixed'), row_count=(1, 'fixed'), type="numpy", datatype="number")
                     threshold = gr.Number(label="threshold", visible=False)
                     thresholding_type.change(fn=onThresholdChange, inputs=thresholding_type, outputs=[thresholds, threshold])
+                    calculate_otsu = gr.Button("Calculate otsu thresholds")
+                    calculate_otsu.click(fn=calculateOtsuThresholds, inputs=dropFile, outputs=[thresholds, thresholding_type])
                     applyButton = gr.Button("Apply thresholding on image")
                 with gr.Column():
                     outputImage = gr.Image()
