@@ -202,3 +202,9 @@ class PPMImage(Image):
         self._addNoise(self.__g)
         self._addNoise(self.__b)
         return self
+
+    def linearTransform(self, points):
+        self._linearTransform(self.__r, points)
+        self._linearTransform(self.__g, points)
+        self._linearTransform(self.__b, points)
+        return self

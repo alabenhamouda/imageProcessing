@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import os
+import numpy as np
 
 
 def plot_histogram(hist):
@@ -10,6 +11,13 @@ def plot_histogram(hist):
     ax.plot(levels, hist, drawstyle="steps")
 
     return fig, ax
+
+def plot_points(ax: plt.Axes, points: np.ndarray):
+    x = points[:,0]
+    y = points[:,1]
+
+    ax.clear()
+    ax.plot(x, y)
 
 
 def getOutputFilePath(filename):

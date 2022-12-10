@@ -7,6 +7,8 @@ import cv2 as cv
 import constants
 import helpers
 import matplotlib
+import matplotlib.pyplot as plt
+from operator import itemgetter
 
 matplotlib.use("Agg")
 
@@ -79,6 +81,30 @@ def addNoise(file: typing.TextIO):
     image.addNoise()
     return image[:,:]
 
+def linearTransformation(file: typing.TextIO, points):
+    if file is None:
+        return None
+    try:
+        points = points.astype(float)
+    except:
+        return None
+    image = PPMImage.convertImageToPPM(file.name)
+    image.linearTransform(points)
+    return image[:,:]
+
+linear_transform_fig, linear_transform_ax = plt.subplots()
+
+def plotTransformationLines(points: np.ndarray):
+    try:
+        points = points.astype(float)
+    except:
+        return None
+    points = np.insert(points, 0, [[0, 0]], axis=0)
+    points = np.append(points, [[255, 255]], axis=0)
+    points = np.array(sorted(points, key=itemgetter(0, 1)))
+    helpers.plot_points(linear_transform_ax, points)
+    return linear_transform_fig
+
 with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
@@ -134,5 +160,15 @@ with gr.Blocks() as demo:
                 with gr.Column():
                     outputImage = gr.Image()
                     applyButton.click(fn=equalizeHist, inputs=dropFile, outputs=outputImage)
+        with gr.Tab("linear transformation"):
+            with gr.Row():
+                with gr.Column():
+                    points = gr.DataFrame(headers=["X", "Y"], col_count=(2, 'fixed'), type="numpy", datatype="number")
+                    plot = gr.Plot()
+                    points.change(fn=plotTransformationLines, inputs=points, outputs=plot)
+                    applyButton = gr.Button("Apply linear transformation")
+                with gr.Column():
+                    outputImage = gr.Image()
+                    applyButton.click(fn=linearTransformation, inputs=[dropFile, points], outputs=outputImage)
 
 demo.launch()
