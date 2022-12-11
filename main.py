@@ -201,6 +201,15 @@ def closeImage(file: typing.TextIO, kernel: np.ndarray, seed: np.ndarray):
     image.erode(se)
     return image[:,:]
 
+def calculate_signal_to_noise_ratio(original_image: typing.TextIO, treated_image: typing.TextIO):
+    if original_image is None or treated_image is None:
+        return None
+    original = PPMImage.convertImageToPPM(original_image.name)
+    treated = PPMImage.convertImageToPPM(treated_image.name)
+    snr_r, snr_g, snr_b = PPMImage.signalToNoiseRatio(original, treated)
+    data = [[snr_r, snr_g, snr_b]]
+    return gr.Dataframe.update(value=data, visible=True)
+
 with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
@@ -249,6 +258,21 @@ with gr.Blocks() as demo:
                 with gr.Column():
                     outputImage = gr.Image()
                     applyButton.click(fn=applyMedianFilter, inputs=dropFile, outputs=outputImage)
+        with gr.Tab("Signal to Noise Ratio"):
+            with gr.Row():
+                with gr.Column():
+                    treated_image_file = gr.File()
+                    treated_image = gr.Image()
+                    treated_image_file.change(fn=showImage, inputs=treated_image_file, outputs=treated_image)
+                    calculate_button = gr.Button("Calculate Signal to Noise Ratio")
+                with gr.Column():
+                    signal_to_noise_ratio = gr.Dataframe(
+                        visible=False,
+                        interactive=False,
+                        row_count=(1, 'fixed'),
+                        col_count=(3, 'fixed'),
+                        headers=["SNR on red", "SNR on green", "SNR on blue"])
+                    calculate_button.click(fn=calculate_signal_to_noise_ratio, inputs=[dropFile, treated_image_file], outputs=signal_to_noise_ratio)
         with gr.Tab("Equalize histogram"):
             with gr.Row():
                 with gr.Column():

@@ -165,3 +165,14 @@ class Image:
                     self.__set_pixel_at_seed(mat, r, c, se, self.maxLevel)
                 else:
                     self.__set_pixel_at_seed(mat, r, c, se, 0)
+    
+    def _signalToNoiseRatio(original: np.ndarray, treated: np.ndarray):
+        rows, cols = original.shape
+        mean_original = np.mean(original)
+        num = 0
+        den = 0
+        for r in range(rows):
+            for c in range(cols):
+                num += (original[r][c] - mean_original) ** 2
+                den += (original[r][c] - treated[r][c]) ** 2
+        return math.sqrt(num / den)

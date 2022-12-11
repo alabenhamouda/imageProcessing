@@ -70,29 +70,43 @@ class PPMImage(Image):
                                                     for value in pixel) for pixel in row]) for row in data])
             f.writelines([datastr])
 
-    def convertImageToPPM(filepath: 'str') -> 'PPMImage':
-        extension = pathlib.Path(filepath).suffix
-        if extension == ".ppm":
-            return PPMImage.readFromFile(filepath)
-        elif extension == ".pgm":
-            pgmImage = PGMImage.readFromFile(filepath)
-            data = pgmImage._PGMImage__data
-            ppmImage = PPMImage(
-                pgmImage.rows, pgmImage.cols, pgmImage.maxLevel)
-            ppmImage.__r = data
-            ppmImage.__g = np.array(data)
-            ppmImage.__b = np.array(data)
-            return ppmImage
-        else:
-            img = cv2.imread(filepath)
-            rows, cols, _ = img.shape
-            maxLevel = img.max()
-            ppmImage = PPMImage(rows, cols, maxLevel)
-            ppmImage.__r = img[:, :, 0]
-            ppmImage.__g = img[:, :, 1]
-            ppmImage.__b = img[:, :, 2]
+    def __createImageFromMatrix(img: np.ndarray):
+        rows, cols, _ = img.shape
+        maxLevel = img.max()
+        ppmImage = PPMImage(rows, cols, maxLevel)
+        ppmImage.__r = img[:, :, 0]
+        ppmImage.__g = img[:, :, 1]
+        ppmImage.__b = img[:, :, 2]
+        return ppmImage
 
-            return ppmImage
+
+
+    def convertImageToPPM(image: 'str | np.ndarray') -> 'PPMImage':
+        """
+        Create a PPMImage object from an image, the image argument can be a file path of the input image
+        which can be a ppm, pgm, or other types of images, or a numpy array that represents the matrix of the image
+        the matrix must hold the RGB values of the pixels of the image
+        """
+        if isinstance(image, str):
+            extension = pathlib.Path(image).suffix
+            if extension == ".ppm":
+                return PPMImage.readFromFile(image)
+            elif extension == ".pgm":
+                pgmImage = PGMImage.readFromFile(image)
+                data = pgmImage._PGMImage__data
+                ppmImage = PPMImage(
+                    pgmImage.rows, pgmImage.cols, pgmImage.maxLevel)
+                ppmImage.__r = data
+                ppmImage.__g = np.array(data)
+                ppmImage.__b = np.array(data)
+            else:
+                img = cv2.imread(image)
+                ppmImage = PPMImage.__createImageFromMatrix(img)
+        else:
+            # the image passed is a matrix here
+            ppmImage = PPMImage.__createImageFromMatrix(image)
+
+        return ppmImage
 
     def rgbThreshold(self, tr, tg, tb):
         for r in range(self.rows):
@@ -182,3 +196,6 @@ class PPMImage(Image):
         self._dilate(self.__g, se)
         self._dilate(self.__b, se)
         return self
+
+    def signalToNoiseRatio(original: 'PPMImage', treated: 'PPMImage'):
+        return Image._signalToNoiseRatio(original.__r, treated.__r), Image._signalToNoiseRatio(original.__g, treated.__g), Image._signalToNoiseRatio(original.__b, treated.__b)
