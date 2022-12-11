@@ -3,6 +3,7 @@ import math
 from operator import itemgetter
 from linearTransformation import LinearTransformation
 import random
+from structuringElement import StructuringElement
 
 
 class Image:
@@ -139,3 +140,28 @@ class Image:
                 thresh = lvl
 
         return thresh
+
+    def __set_pixel_at_seed(self, mat: np.ndarray, r, c, se: StructuringElement, value: int):
+        seed_r, seed_c = se.seed
+        row = r + seed_r
+        col = c + seed_c
+        if row >= 0 and row < self.rows and col >= 0 and col < self.cols:
+            mat[row][col] = value
+
+    def _erode(self, mat: np.ndarray, se: StructuringElement):
+        matcpy = np.array(mat)
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if se.matches(matcpy, r, c, self.maxLevel, padding=1):
+                    self.__set_pixel_at_seed(mat, r, c, se, self.maxLevel)
+                else:
+                    self.__set_pixel_at_seed(mat, r, c, se, 0)
+    
+    def _dilate(self, mat: np.ndarray, se: StructuringElement):
+        matcpy = np.array(mat)
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if se.has_match(matcpy, r, c, self.maxLevel, padding=0):
+                    self.__set_pixel_at_seed(mat, r, c, se, self.maxLevel)
+                else:
+                    self.__set_pixel_at_seed(mat, r, c, se, 0)

@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2 as cv
 import copy
+from structuringElement import StructuringElement
 
 
 def equalizeHist():
@@ -183,3 +184,19 @@ def pgmtoppm():
     chatppm = PPMImage(chat.rows, chat.cols, chat.maxLevel)
     chatppm._PPMImage__r = chatppm._PPMImage__g = chatppm._PPMImage__b = chat._PGMImage__data
     chatppm.writeToFile(helpers.getOutputFilePath("chatppm.ppm"))
+
+def erosion():
+    filepath = './images/car.jpeg'
+    image = PPMImage.convertImageToPPM(filepath)
+    o1, o2, o3 = image.otsu()
+    print(o1)
+    print(o2)
+    print(o3)
+    image.rgbThreshold(o1, o2, o3)
+    image.writeToFile(helpers.getOutputFilePath('otsu.ppm'))
+    kernel = np.array([
+        [1, 1],
+        [1, 1]
+    ])
+    image.erode(StructuringElement(kernel, seed=(0, 0)))
+    image.writeToFile(helpers.getOutputFilePath('erosion.ppm'))

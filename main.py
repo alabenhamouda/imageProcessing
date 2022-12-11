@@ -9,6 +9,7 @@ import helpers
 import matplotlib
 import matplotlib.pyplot as plt
 from operator import itemgetter
+from structuringElement import StructuringElement
 
 matplotlib.use("Agg")
 
@@ -136,6 +137,68 @@ def calculateOtsuThresholds(file: typing.TextIO):
     # update the threshold type to be normal thresholding and set the thresholds value on the table
     return gr.DataFrame.update(value=[[tr, tg, tb]]), gr.Dropdown.update(value=constants.NORMALTHRESHOLDING)
 
+def erodeImage(file: typing.TextIO, kernel: np.ndarray, seed: np.ndarray):
+    if file is None:
+        return None
+    image = PPMImage.convertImageToPPM(file.name)
+    # image = cv.imread(file.name)
+    try:
+        kernel = kernel.astype(int)
+        seed = seed.astype(int)
+        seed = tuple(seed[0])
+    except:
+        return None
+    image.erode(StructuringElement(kernel, seed))
+    # image = cv.erode(image, kernel, iterations=1)
+    return image[:,:]
+    # return image
+
+def dilateImage(file: typing.TextIO, kernel: np.ndarray, seed: np.ndarray):
+    if file is None:
+        return None
+    image = PPMImage.convertImageToPPM(file.name)
+    # image = cv.imread(file.name)
+    try:
+        kernel = kernel.astype(int)
+        seed = seed.astype(int)
+        seed = tuple(seed[0])
+    except:
+        return None
+    image.dilate(StructuringElement(kernel, seed))
+    # image = cv.dilate(image, kernel, iterations=1)
+    return image[:,:]
+    # return image
+
+def openImage(file: typing.TextIO, kernel: np.ndarray, seed: np.ndarray):
+    if file is None:
+        return None
+    image = PPMImage.convertImageToPPM(file.name)
+    try:
+        kernel = kernel.astype(int)
+        seed = seed.astype(int)
+        seed = tuple(seed[0])
+    except:
+        return None
+    se = StructuringElement(kernel, seed)
+    image.erode(se)
+    image.dilate(se)
+    return image[:,:]
+
+def closeImage(file: typing.TextIO, kernel: np.ndarray, seed: np.ndarray):
+    if file is None:
+        return None
+    image = PPMImage.convertImageToPPM(file.name)
+    try:
+        kernel = kernel.astype(int)
+        seed = seed.astype(int)
+        seed = tuple(seed[0])
+    except:
+        return None
+    se = StructuringElement(kernel, seed)
+    image.dilate(se)
+    image.erode(se)
+    return image[:,:]
+
 with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
@@ -215,5 +278,24 @@ with gr.Blocks() as demo:
                 with gr.Column():
                     outputImage = gr.Image()
                     applyButton.click(fn=thresholdImage, inputs=[dropFile, thresholds, threshold, thresholding_type], outputs=outputImage)
+        with gr.Tab("morphological operations"):
+            with gr.Row():
+                with gr.Column():
+                    exampleKernel = [
+                        [1, 1],
+                        [1, 1]
+                    ]
+                    kernel = gr.DataFrame(type="numpy", headers=None, value=exampleKernel)
+                    seed = gr.DataFrame(headers=["X", "Y"], col_count=(2, 'fixed'), row_count=(1, 'fixed'), type="numpy", datatype="number")
+                    erodeButton = gr.Button("Erode image")
+                    dilateButton = gr.Button("Dilate image")
+                    openButton = gr.Button("Open image")
+                    closeButton = gr.Button("closeImage")
+                with gr.Column():
+                    outputImage = gr.Image()
+                    erodeButton.click(fn=erodeImage, inputs=[dropFile, kernel, seed], outputs=outputImage)
+                    dilateButton.click(fn=dilateImage, inputs=[dropFile, kernel, seed], outputs=outputImage)
+                    openButton.click(fn=openImage, inputs=[dropFile, kernel, seed], outputs=outputImage)
+                    closeButton.click(fn=closeImage, inputs=[dropFile, kernel, seed], outputs=outputImage)
 
 demo.launch()

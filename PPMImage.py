@@ -3,6 +3,7 @@ import pathlib
 import cv2
 from Image import Image
 from PGMImage import PGMImage
+from structuringElement import StructuringElement
 
 
 class PPMImage(Image):
@@ -168,4 +169,16 @@ class PPMImage(Image):
         self._linearTransform(self.__r, points)
         self._linearTransform(self.__g, points)
         self._linearTransform(self.__b, points)
+        return self
+    
+    def erode(self, se: StructuringElement):
+        self._erode(self.__r, se)
+        self._erode(self.__g, se)
+        self._erode(self.__b, se)
+        return self
+    
+    def dilate(self, se: StructuringElement):
+        self._dilate(self.__r, se)
+        self._dilate(self.__g, se)
+        self._dilate(self.__b, se)
         return self
