@@ -32,11 +32,15 @@ def applyFilter(file: 'typing.TextIO', kernel: 'np.ndarray'):
     # return filtered
     return image[:,:]
 
-def applyMedianFilter(file: 'typing.TextIO'):
+def applyMedianFilter(file: 'typing.TextIO', kernel_size: int):
     if file is None:
         return
     image = PPMImage.convertImageToPPM(file.name)
-    image.applyMedianFilter(5, 5)
+    try:
+        kernel_size = int(kernel_size)
+    except:
+        return None
+    image.applyMedianFilter(kernel_size, kernel_size)
     # image = cv.imread(file.name)
     # filtered = cv.medianBlur(image, 5)
     # return filtered
@@ -254,10 +258,11 @@ with gr.Blocks() as demo:
         with gr.Tab("median filter"):
             with gr.Row():
                 with gr.Column():
+                    kernel_size = gr.Number(label="Kernel size", value=3)
                     applyButton = gr.Button()
                 with gr.Column():
                     outputImage = gr.Image()
-                    applyButton.click(fn=applyMedianFilter, inputs=dropFile, outputs=outputImage)
+                    applyButton.click(fn=applyMedianFilter, inputs=[dropFile, kernel_size], outputs=outputImage)
         with gr.Tab("Signal to Noise Ratio"):
             with gr.Row():
                 with gr.Column():
